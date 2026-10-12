@@ -1,0 +1,14 @@
+{
+  "name": "tearsheets-product-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fictional, zero-dependency demonstration of TEARSHEETS attribution and editorial controls",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "demo": "node examples/run-demo.mjs"
+  }
+}
