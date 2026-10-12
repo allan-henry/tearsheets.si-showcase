@@ -1,0 +1,179 @@
+{
+  "synthetic": true,
+  "description": "All photographers, photographs, articles and publications in this file are invented.",
+  "tenants": [
+    {
+      "tenantId": "photographer-orchid",
+      "knownPhotoIds": [
+        "photo-a"
+      ]
+    },
+    {
+      "tenantId": "photographer-cinder",
+      "knownPhotoIds": []
+    }
+  ],
+  "runs": [
+    {
+      "tenantId": "photographer-orchid",
+      "runId": "synthetic-onboarding-1",
+      "generation": 1,
+      "status": "complete_bounded",
+      "candidates": [
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-101",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-1.example/articles/synthetic-1",
+          "publisher": "North City Ledger",
+          "provider": "google_images",
+          "modelClaims": {
+            "creditLocation": "own_caption",
+            "confidence": 0.99
+          }
+        },
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-101",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-1.example/articles/synthetic-1",
+          "publisher": "North City Ledger",
+          "provider": "yahoo"
+        },
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-102",
+          "photoId": "photo-b",
+          "articleUrl": "https://paper-2.example/articles/synthetic-2",
+          "publisher": "The Harbor Bulletin",
+          "provider": "google_images",
+          "modelClaims": {
+            "creditLocation": "own_caption"
+          }
+        },
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-103",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-3.example/articles/synthetic-3",
+          "publisher": "The Valley Paper",
+          "provider": "bing"
+        },
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-104",
+          "photoId": "photo-c",
+          "articleUrl": "https://paper-4.example/articles/synthetic-4",
+          "publisher": "The Harbor Bulletin",
+          "provider": "google_images"
+        },
+        {
+          "tenantId": "photographer-orchid",
+          "useId": "use-105",
+          "photoId": "photo-d",
+          "articleUrl": "https://paper-5.example/articles/synthetic-5",
+          "publisher": "The Harbor Bulletin",
+          "provider": "google_images"
+        }
+      ],
+      "checks": {
+        "use-101": {
+          "tenantId": "photographer-orchid",
+          "useId": "use-101",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-1.example/articles/synthetic-1",
+          "imageOnArticle": true,
+          "mediaValid": true,
+          "authorized": true,
+          "creditLocation": "own_caption",
+          "creditedTenantId": "photographer-orchid"
+        },
+        "use-102": {
+          "tenantId": "photographer-orchid",
+          "useId": "use-102",
+          "photoId": "photo-b",
+          "articleUrl": "https://paper-2.example/articles/synthetic-2",
+          "imageOnArticle": true,
+          "mediaValid": true,
+          "authorized": true,
+          "creditLocation": "page_only",
+          "creditedTenantId": "photographer-orchid"
+        },
+        "use-103": {
+          "tenantId": "photographer-orchid",
+          "useId": "use-103",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-3.example/articles/synthetic-3",
+          "imageOnArticle": true,
+          "mediaValid": true,
+          "authorized": true,
+          "creditLocation": "known_agency_id",
+          "matchedPhotoId": "photo-a"
+        },
+        "use-104": {
+          "tenantId": "photographer-orchid",
+          "useId": "use-104",
+          "photoId": "photo-c",
+          "articleUrl": "https://paper-4.example/articles/synthetic-4",
+          "imageOnArticle": true,
+          "mediaValid": true,
+          "authorized": true,
+          "creditLocation": "other_photographer",
+          "creditedTenantId": "photographer-cinder"
+        },
+        "use-105": {
+          "tenantId": "photographer-orchid",
+          "useId": "use-105",
+          "photoId": "photo-d",
+          "articleUrl": "https://paper-5.example/articles/synthetic-5",
+          "imageOnArticle": true,
+          "mediaValid": false,
+          "authorized": true,
+          "creditLocation": "own_caption",
+          "creditedTenantId": "photographer-orchid"
+        }
+      }
+    },
+    {
+      "tenantId": "photographer-cinder",
+      "runId": "synthetic-onboarding-2",
+      "generation": 1,
+      "status": "complete",
+      "candidates": [
+        {
+          "tenantId": "photographer-cinder",
+          "useId": "use-101",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-1.example/articles/synthetic-1",
+          "publisher": "North City Ledger",
+          "provider": "google_images"
+        }
+      ],
+      "checks": {
+        "use-101": {
+          "tenantId": "photographer-cinder",
+          "useId": "use-101",
+          "photoId": "photo-a",
+          "articleUrl": "https://paper-1.example/articles/synthetic-1",
+          "imageOnArticle": true,
+          "mediaValid": true,
+          "authorized": true,
+          "creditLocation": "own_caption",
+          "creditedTenantId": "photographer-cinder"
+        }
+      }
+    }
+  ],
+  "photographerActions": [
+    {
+      "tenantId": "photographer-orchid",
+      "photoId": "photo-b",
+      "decision": "mine"
+    },
+    {
+      "tenantId": "photographer-orchid",
+      "photoId": "photo-a",
+      "decision": "hide"
+    }
+  ]
+}
