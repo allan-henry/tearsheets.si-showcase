@@ -156,7 +156,8 @@ export class ShowcaseArchive {
     const counters = { credited: 0, unchecked: 0, ignored: 0 };
 
     for (const candidate of prepared) {
-      const trustedCheck = checks[candidate.useId];
+      const trustedCheck = Object.prototype.hasOwnProperty.call(checks, candidate.useId)
+        ? checks[candidate.useId] : null;
       const result = evaluateEvidence(candidate, trustedCheck, tenant);
       counters[result.disposition] += 1;
 
