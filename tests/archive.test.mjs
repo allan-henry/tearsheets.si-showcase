@@ -355,6 +355,52 @@ test("other-tenant operators cannot withdraw archive data", () => {
   assert.equal(resultCount(a), 1);
 });
 
+test("withdrawing the latest run retains an earlier run's use", () => {
+  const a = archive();
+  const original = candidate();
+  importOne(a, original);
+
+  const again = { ...original, provider: "bing" };
+  a.importRun({
+    tenantId: T1, runId: "run-2", generation: 2, status: "complete",
+    candidates: [again],
+    checks: { [again.useId]: trustedCheck(again) },
+  });
+  assert.equal(resultCount(a), 1);
+  assert.deepEqual(
+    a.snapshot(T1).results.published[0].sourceRunIds,
+    ["run-1", "run-2"],
+  );
+
+  assert.deepEqual(a.withdrawRun({
+    tenantId: T1, runId: "run-2", actor: operator(T1),
+  }), { status: "withdrawn", removed: 0 });
+
+  assert.equal(resultCount(a), 1);
+  const existing = a.snapshot(T1).results.published[0];
+  assert.deepEqual(existing.sourceRunIds, ["run-1"]);
+  assert.deepEqual(existing.providers, ["google_images"]);
+});
+
+test("withdrawing only the strong evidence restores an earlier unchecked use", () => {
+  const a = archive();
+  const c = candidate();
+  importOne(a, c, {
+    checks: { [c.useId]: trustedCheck(c, { creditLocation: "page_only" }) },
+  });
+  assert.equal(resultCount(a, T1, "queue"), 1);
+  a.importRun({
+    tenantId: T1, runId: "run-2", generation: 2, status: "complete",
+    candidates: [c], checks: { [c.useId]: trustedCheck(c) },
+  });
+  assert.equal(resultCount(a), 1);
+
+  a.withdrawRun({ tenantId: T1, runId: "run-2", actor: operator(T1) });
+  assert.equal(resultCount(a), 0);
+  assert.equal(resultCount(a, T1, "queue"), 1);
+  assert.deepEqual(a.snapshot(T1).results.queue[0].sourceRunIds, ["run-1"]);
+});
+
 test("clearing a photographer's Mine decision restores the unchecked queue", () => {
   const a = archive();
   const c = candidate();
