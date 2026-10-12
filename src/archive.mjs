@@ -81,7 +81,34 @@ function evaluateEvidence(candidate, trustedCheck, tenant) {
 }
 
 function copyUse(use) {
-  return { ...use, providers: [...use.providers] };
+  return {
+    ...use,
+    providers: [...use.providers],
+    runEvidence: use.runEvidence.map(entry => ({
+      ...entry, providers: [...entry.providers],
+    })),
+    sourceRunIds: [...use.sourceRunIds],
+  };
+}
+
+/**
+ * A single publication use may be discovered by multiple runs.
+ * Retain each run's contribution so withdrawing one never destroys a
+ * different run's evidence for the same use.
+ */
+function recalculateUse(use) {
+  const providers = new Set();
+  for (const entry of use.runEvidence) {
+    for (const provider of entry.providers) providers.add(provider);
+  }
+  return {
+    ...use,
+    providers: [...providers].sort(),
+    disposition: use.runEvidence.some(x => x.disposition === "credited")
+      ? "credited" : "unchecked",
+    sourceRunIds: [...new Set(use.runEvidence.map(x => x.runId))].sort(),
+    generation: Math.max(...use.runEvidence.map(x => x.generation)),
+  };
 }
 
 export class ShowcaseArchive {
@@ -170,21 +197,28 @@ export class ShowcaseArchive {
            previous.publisher !== candidate.publisher)) {
         throw new Error("one useId cannot describe different photographs or articles");
       }
-      const providers = new Set(previous?.providers ?? []);
-      providers.add(candidate.provider);
-      proposedUses.set(candidate.useId, {
+      const runEvidence = previous?.runEvidence ?? [];
+      const existing = runEvidence.find(entry => entry.runId === runId);
+      if (existing) {
+        existing.disposition = existing.disposition === "credited" ||
+          result.disposition === "credited" ? "credited" : "unchecked";
+        existing.providers = [...new Set([...existing.providers, candidate.provider])];
+        existing.generation = generation;
+      } else {
+        runEvidence.push({
+          runId, generation,
+          disposition: result.disposition,
+          providers: [candidate.provider],
+        });
+      }
+      proposedUses.set(candidate.useId, recalculateUse({
         tenantId,
         useId: candidate.useId,
         photoId: candidate.photoId,
         articleUrl: candidate.articleUrl,
         publisher: candidate.publisher,
-        providers: [...providers].sort(),
-        // Strong evidence may upgrade a previous unchecked candidate.
-        disposition: result.disposition === "credited" ||
-          previous?.disposition === "credited" ? "credited" : "unchecked",
-        sourceRunId: runId,
-        generation,
-      });
+        runEvidence,
+      }));
     }
 
     tenant.uses = proposedUses;
@@ -219,9 +253,15 @@ export class ShowcaseArchive {
     requiredString(runId, "runId");
     let removed = 0;
     for (const [useId, use] of tenant.uses) {
-      if (use.sourceRunId === runId) {
+      const surviving = use.runEvidence.filter(entry => entry.runId !== runId);
+      if (surviving.length === use.runEvidence.length) continue;
+      if (surviving.length === 0) {
         tenant.uses.delete(useId);
         removed += 1;
+      } else {
+        tenant.uses.set(useId, recalculateUse({
+          ...use, runEvidence: surviving,
+        }));
       }
     }
     return { status: "withdrawn", removed };
