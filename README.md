@@ -1,97 +1,90 @@
-# TEARSHEETS.SI | Product decisions and automation showcase
+# TEARSHEETS.SI — AI-assisted product development
 
-**A fictional, runnable example of publication discovery, image attribution, photographer control, and failure recovery.**
+**A product case study in automating publication discovery, preserving trustworthy attribution, and giving photographers control over their published work.**
 
-This is a **newly written, AI-assisted product demonstration**, not the private TEARSHEETS production application. It contains invented photographers, article URLs, publications, and photograph IDs. No real photographs, customer data, publisher HTML, live APIs, or deployment secrets are included.
+**[See Allan Henry's existing public Tearsheet](https://tearsheets.si)** · **[Explore the runnable synthetic demonstration](#try-the-public-demonstration)** · **[Read the product decisions](docs/PRODUCT-DECISIONS.md)**
 
-## The customer problem
+> **What this repository is:** a public, newly written demonstration of selected product decisions. The real TEARSHEETS application, infrastructure, source history, publisher evidence, and customer records are maintained separately. This code does **not** power the live site.
 
-A professional photographer's work can appear across many publications, long after the original assignment. Keeping track of those uses manually becomes another unpaid job. TEARSHEETS is intended to make that archive maintain itself, without requiring photographers to constantly upload and organize their work.
+## The product
 
-That creates a product problem: a plausible but incorrectly attributed image should **not** appear publicly under the wrong photographer's name. Yet forcing the owner to inspect every possible match would defeat the point of automation.
+Photographs keep traveling after they have been delivered to a wire service, editor, or publication. Their creator often has no dependable record of where a particular image appeared, how it was credited, or how frequently it was reused. Reconstructing that history by hand becomes another assignment.
 
-The product principle is **mostly right, easy to correct**. It favors precision over chasing every possible published use, leaves uncertain matches unchecked, and puts the final decision with the photographer.
+I created TEARSHEETS to close that gap: retrieve credited publication appearances, keep the evidence connected to the photograph, and give its photographer a continuously useful record without requiring them to upload and organize everything themselves.
 
-## The product judgment
+The product challenge is not simply finding search results. It is deciding **which evidence is trustworthy enough to show**, how to preserve the photographer's decisions, and how to keep an automated service useful when sources are incomplete or wrong.
 
-The core experience is a decision system, not just a search engine.
+## What has been built (October 2026)
 
-| Evidence and event | Product behavior |
+The private working project has progressed beyond an isolated archive demonstration into a **controlled beta** with connected photographer and operator experiences. This is a status summary, not a claim of a generally available subscription launch.
+
+| Area | Implemented private-beta capability and boundary |
 | --- | --- |
-| A photographer's approved credit is attached to the image's own caption | Eligible to appear automatically, assuming media and authorization checks pass |
-| An agency ID links the appearance to an already known photograph | Eligible as another publication use |
-| A photographer credit appears on the page but cannot be tied to this image | Unchecked. It goes to the photographer's review queue |
-| Another photographer's credit is attached to the image | Not published for the current photographer |
-| The photographer selects **Mine** | Published as **added by photographer** |
-| The photographer selects **Hide** | Remains theirs but disappears from the visible archive |
-| The photographer selects **Not Mine** | Excluded for that photographer, not for anyone else |
-| A later search finds the same photograph again | Existing photographer decisions still win |
-| A run fails | The previously accepted archive remains intact |
-| A run finishes at its approved search budget | Qualifying results are kept; the run is reported as bounded |
+| **Photographer onboarding** | A four-stage journey: enter a published article URL → select the photograph and credit → see a bounded discovery preview → save. The preview can show the seed image plus up to nine additional candidates when available; it does not claim complete coverage. |
+| **Waitlist and invitation** | Persisted applications, invitation-controlled admission, email verification, and an existing hosted-payment handoff for eligible invited users. Opening the journey to unrestricted public traffic is a separate release decision. |
+| **Attribution and publication history** | Image-specific caption/credit evidence, candidate review, deduplication, and multiple documented publication uses associated with a photograph. Search results alone are not proof of authorship. |
+| **Photographer controls** | **Mine**, **Not mine**, and **Hide** decisions distinguish attribution from visibility and prevent later automation from silently reversing the photographer's choice. |
+| **Member and operator experience** | A member review workspace and operator dashboard for applications, invitations, admission, discovery status, and items needing attention, with administrative actions kept separate from public access. |
+| **Website integration** | A new product site and URL/domain integration have been designed and are undergoing draft review. They should **not** be mistaken for a publicly launched product website or open enrollment. |
 
-These are distinct choices about customer trust, experience design, and operator workload. They are illustrated by tests, not represented as independently measured business results.
+The platform uses Cloudflare Workers/Pages and persistent storage in the private implementation, with separate discovery, editorial-control, and customer-facing responsibilities. The public demonstration below intentionally omits those infrastructure services.
 
-## See it work
+## My role: product direction through implementation
 
-**Requires Node.js 20 or later. No dependencies or credentials.**
+TEARSHEETS grew out of my work as an assignment photographer, but the work is product development across user experience, operations, software architecture, reliability, and trust.
+
+I defined the customer problem and workflows; set the requirements for source evidence, corrections, acceptance tests, and operating costs; and directed AI-assisted development through bounded GitHub issues, pull requests, test evidence, and independent reviews. I made the decisions about what could be automated, where a person must remain accountable, and what required explicit release authorization.
+
+Three decisions illustrate the approach:
+
+1. **Precision ahead of recall.** A credit elsewhere on an article is not necessarily a credit for the displayed image. Uncertain results stay reviewable instead of being presented as verified.
+2. **Human judgment outlasts automation.** When a photographer marks an image Not mine or Hide, subsequent discoveries must respect that choice. Separate *what was discovered* from *what the photographer chooses to display*.
+3. **Test the failure path and the handoff.** Bounded search budgets, repeat-safe imports, tenant isolation, rollback discipline, and real browser journeys matter as much as a successful demo. AI coding agents can accelerate implementation without taking release authority away from the owner.
+
+These choices are documented in [Product Decisions and Acceptance Criteria](docs/PRODUCT-DECISIONS.md). They are design and engineering judgments, not asserted revenue, accuracy, or customer time-saved metrics.
+
+## Try the public demonstration
+
+**This repository contains a small, synthetic, zero-dependency JavaScript model—not the actual private application.** It uses fictional photographers, publication URLs, article records and photograph IDs. It never contacts publishers, downloads photographs, calls an AI model, creates a customer account, or makes a paid request.
+
+Requires Node.js 20 or later:
 
 ```bash
 npm test
 npm run demo
 ```
 
-The demo prints the synthetic states before and after photographer corrections, along with an ignored replay and a failed run that preserves the last accepted archive.
+The demo shows candidates moving through an independent trusted-evidence check, photographer decisions, deduplicated publication uses, bounded imports, replay protection, and failure recovery. A failed run leaves the last accepted record intact.
 
-The tests check attribution evidence boundaries, deduplication across search providers, tenant isolation, the photographer's authority, idempotent imports, stale generations, bounded runs, bad media, and targeted recovery.
-
-**Source:** [`src/archive.mjs`](src/archive.mjs)  
-**Fictional data:** [`examples/synthetic-publisher-records.json`](examples/synthetic-publisher-records.json)  
-**Tests:** [`tests/archive.test.mjs`](tests/archive.test.mjs)  
-**Decision case study:** [`docs/PRODUCT-DECISIONS.md`](docs/PRODUCT-DECISIONS.md)
-
-## Simplified architecture
+| Inspect | File |
+| --- | --- |
+| Example decision engine | [`src/archive.mjs`](src/archive.mjs) |
+| Synthetic publisher records | [`examples/synthetic-publisher-records.json`](examples/synthetic-publisher-records.json) |
+| Automated test cases | [`tests/archive.test.mjs`](tests/archive.test.mjs) |
+| Product decisions and trade-offs | [`docs/PRODUCT-DECISIONS.md`](docs/PRODUCT-DECISIONS.md) |
 
 ```text
-  Discovery results (untrusted; multiple providers)
-                      |
-                      v
-  Independent evidence and media checks (trusted input)
-                      |
-                      v
-             Bounded import/run
-                /           \
-      credited uses      unchecked queue
-                \           /
-                 Per-tenant archive
-                        |
-           Photographer decision overlay
-                  /     |       \
-                Mine   Hide    Not Mine
-                  \     |       /
-             Public / hidden / excluded views
+Untrusted discovery candidates
+              ↓
+Independent evidence + media eligibility
+              ↓
+     Bounded, idempotent import
+              ↓
+  Photographer-specific photo record
+              ↓
+        Mine / Hide / Not mine
+              ↓
+       Curated published history
 ```
 
-The model keeps photograph-level decisions separate from publication-use records. That means a later import cannot silently undo a photographer's correction. It also separates the question **“was this photograph published here?”** from **“should this photographer display it?”**
+**Boundary of the example:** The `trusted` evidence and actor identity are supplied by the test fixture. This example is **not** an authentication system, a caption parser, a production accuracy evaluation, or an implementation of D1/R2, publisher fetching, image licensing, payment, or live background harvesting.
 
-The example uses in-memory Maps rather than D1/R2. A production implementation needs authenticated users, a trustworthy source parser, signed evidence, persistent transactions, media permissions, storage, and an actual publication system. This demonstration does **not** pretend to implement those controls.
+## Current scope and disclosure
 
-## My role and what I learned
+- The public [tearsheets.si](https://tearsheets.si) address shows the existing photography Tearsheet; it should not be confused with the not-yet-public product-site rollout.
+- Real beta access, admission, billing, and photographer publication are controlled. The complete self-service, multi-photographer launch is **not** claimed as generally available.
+- The runnable code and fictional fixtures in this repository are newly authored AI-assisted examples, not an export of confidential production files. No real photographs, customer information, original media, search artifacts, credentials, or private deployment materials are included.
+- Tests here validate the deliberately limited model. They do not establish measured recall, real-world precision, cost savings, or reliability at production scale.
+- Public visibility does not grant a software license; redistribution rights remain reserved unless a license is expressly added.
 
-I started TEARSHEETS from firsthand editorial experience and defined the user problem, product requirements, customer-control rules, priorities, and review criteria. I directed AI-assisted implementation through GitHub issues and pull requests, compared competing technical recommendations, and retained approval over releases and consequential actions.
-
-Early harvest results exposed the difference between **finding a candidate** and **finding a credible photograph attribution**. That changed the design: check image-specific evidence before treating a result as publishable, send uncertain matches to a queue, and allow exceptions without stopping all other work.
-
-I also changed the development process when relaying instructions among AI agents became a bottleneck. The private working project uses distinct builder and reviewer responsibilities, written product principles, and a shared decision record. The PR history for this separate showcase is real, but it does not reproduce the private project's history.
-
-### Status and limits
-
-- TEARSHEETS has a working private archive/pilot and evolving harvesting components. This showcase is **not** evidence that the intended multi-photographer subscription platform has been fully launched.
-- The code in this repository was written as a limited, AI-assisted **synthetic demonstration** of selected product rules. It is **not** presented as a copy of shipped production code.
-- Its trusted evidence records are supplied by a fixture. It does not fetch or parse real publishers, inspect photographs, call a model, or identify real people.
-- The example accepts a trusted caller's role and tenant identity for illustration. It is **not an authentication or authorization service**.
-- Passing local tests validates the small model's stated behaviors, not attribution precision at production scale or a customer's measured time savings.
-- Public repository visibility does not grant a software license. Rights and redistribution terms remain reserved unless a license is expressly added.
-
-The working private repository, actual media, search artifacts, original code history, and operational infrastructure remain separate.
-
-**The central product question is not whether AI can find everything. It is whether the customer can trust what the product shows and fix the exceptions without taking on another job.**
+**The goal is a publication history a photographer can trust and correct—without making its maintenance another unpaid assignment.**
